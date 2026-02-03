@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html ng-app="notesApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Catatan - HTML-ng (AngularJS)</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        /* Login Section */
+        .login-section {
+            padding: 40px 25px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .login-box h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .login-box p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .seed-phrase-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        
+        .seed-phrase-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+        
+        .info-box {
+            background: #e8f4fc;
+            border-left: 4px solid #4A90E2;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 5px;
+        }
+        
+        .info-box h4 {
+            color: #4A90E2;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .info-box ul {
+            padding-left: 20px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 150px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #ff3742;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .input-section {
+            padding: 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        input, textarea {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .notes-section {
+            padding: 25px;
+        }
+        
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .notes-header h2 {
+            color: #333;
+        }
+        
+        .notes-count {
+            background: #4A90E2;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .notes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .note-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border-left: 5px solid #4A90E2;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .note-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .note-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+        
+        .note-content {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            word-break: break-word;
+        }
+        
+        .note-date {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .note-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .empty-notes {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-notes i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        /* Message Styles */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" ng-controller="NotesController as vm">
+        <!-- Header -->
+        <div class="header" ng-if="vm.isLoggedIn">
+            <button class="btn logout-btn" ng-click="vm.logout()">🚪 Logout</button>
+            <h1>📝 Aplikasi Catatan HTML-ng</h1>
+            <p>Menggunakan AngularJS 1.x (HTML-ng) - Two-way Data Binding</p>
+            <p>User: {{vm.currentUser}}</p>
+        </div>
+        
+        <!-- Login Section (Tampil jika belum login) -->
+        <div class="login-section" ng-if="!vm.isLoggedIn">
+            <div class="login-box">
+                <h2>🔐 Login dengan Seed Phrase</h2>
+                <p>Masukkan seed phrase 12 kata untuk mengakses catatan Anda</p>
+                
+                <div class="message message-info" ng-if="vm.showInfo">
+                    <strong>Info:</strong> Untuk pertama kali login, gunakan seed phrase default:<br>
+                    <code>word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12</code>
+                </div>
+                
+                <div class="message" ng-class="{'message-success': vm.loginMessage.type === 'success', 'message-error': vm.loginMessage.type === 'error'}" 
+                     ng-if="vm.loginMessage.text">
+                    {{vm.loginMessage.text}}
+                </div>
+                
+                <textarea class="seed-phrase-input" 
+                          ng-model="vm.seedPhrase" 
+                          placeholder="Masukkan 12 kata seed phrase Anda (dipisahkan spasi)"
+                          ng-keyup="$event.keyCode === 13 && vm.login()"></textarea>
+                
+                <div class="info-box">
+                    <h4>📌 Apa itu Seed Phrase?</h4>
+                    <ul>
+                        <li>Seed phrase adalah kumpulan 12 kata acak yang berfungsi sebagai password</li>
+                        <li>Setiap kata harus dipisahkan dengan spasi</li>
+                        <li>Simpan seed phrase Anda dengan aman!</li>
+                        <li>Catatan Anda dienkripsi dengan seed phrase ini</li>
+                    </ul>
+                </div>
+                
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button class="btn btn-primary" ng-click="vm.login()">
+                        🔑 Login
+                    </button>
+                    <button class="btn btn-secondary" ng-click="vm.generateSeedPhrase()">
+                        🎲 Generate Seed Phrase
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; color: #666; font-size: 14px;">
+                    <p><strong>Demo Mode:</strong> Seed phrase disimpan di localStorage browser Anda.<br>
+                    Data dienkripsi dengan sederhana menggunakan seed phrase sebagai key.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Aplikasi Catatan (Tampil jika sudah login) -->
+        <div ng-if="vm.isLoggedIn">
+            <!-- Input Catatan Baru -->
+            <div class="input-section">
+                <div class="input-group">
+                    <input type="text" ng-model="vm.newNote.title" placeholder="Judul catatan..." maxlength="100">
+                    <textarea ng-model="vm.newNote.content" placeholder="Isi catatan... (maksimal 500 karakter)" maxlength="500"></textarea>
+                    <button class="btn btn-primary" ng-click="vm.addNote()" ng-disabled="!vm.newNote.title || !vm.newNote.content">
+                        ➕ Tambah Catatan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filter Catatan -->
+            <div class="filter-section">
+                <input type="text" class="filter-input" ng-model="vm.searchText" placeholder="🔍 Cari catatan berdasarkan judul atau isi...">
+            </div>
+            
+            <!-- Daftar Catatan -->
+            <div class="notes-section">
+                <div class="notes-header">
+                    <h2>Catatan Saya</h2>
+                    <div class="notes-count">{{vm.getFilteredNotes().length}} catatan</div>
+                </div>
+                
+                <div class="notes-container">
+                    <!-- Jika tidak ada catatan -->
+                    <div class="empty-notes" ng-if="vm.getFilteredNotes().length === 0">
+                        <div>📄</div>
+                        <h3 ng-if="!vm.searchText">Belum ada catatan</h3>
+                        <h3 ng-if="vm.searchText">Tidak ada catatan yang cocok dengan pencarian</h3>
+                        <p ng-if="!vm.searchText">Mulai dengan menambahkan catatan pertama Anda di atas!</p>
+                    </div>
+                    
+                    <!-- Kartu Catatan -->
+                    <div class="note-card" ng-repeat="note in vm.getFilteredNotes() track by $index">
+                        <div class="note-title">{{note.title}}</div>
+                        <div class="note-date">{{note.date | date:'dd MMMM yyyy, HH:mm'}}</div>
+                        <div class="note-content">{{note.content}}</div>
+                        <div class="note-actions">
+                            <button class="btn btn-danger" ng-click="vm.deleteNote($index)">🗑️ Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        angular.module('notesApp', [])
+        .controller('NotesController', function($scope, $timeout) {
+            var vm = this;
+            
+            // Status login
+            vm.isLoggedIn = false;
+            vm.currentUser = '';
+            vm.seedPhrase = '';
+            vm.showInfo = true;
+            
+            // Pesan login
+            vm.loginMessage = {
+                text: '',
+                type: ''
+            };
+            
+            // Data catatan baru
+            vm.newNote = {
+                title: '',
+                content: ''
+            };
+            
+            // Data catatan (akan dienkripsi)
+            vm.notes = [];
+            
+            // Teks untuk pencarian
+            vm.searchText = '';
+            
+            // Default seed phrase untuk demo
+            var DEFAULT_SEED = 'word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12';
+            
+            // Fungsi untuk menampilkan pesan
+            vm.showMessage = function(text, type, duration) {
+                vm.loginMessage.text = text;
+                vm.loginMessage.type = type;
+                
+                if (duration) {
+                    $timeout(function() {
+                        vm.loginMessage.text = '';
+                        vm.loginMessage.type = '';
+                    }, duration);
+                }
+            };
+            
+            // Generate seed phrase acak
+            vm.generateSeedPhrase = function() {
+                var wordList = [
+                    'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse',
+                    'access', 'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act',
+                    'action', 'actor', 'actress', 'actual', 'adapt', 'add', 'addict', 'address', 'adjust', 'admit',
+                    'adult', 'advance', 'advice', 'aerobic', 'affair', 'afford', 'afraid', 'again', 'age', 'agent'
+                ];
+                
+                var seedWords = [];
+                for (var i = 0; i < 12; i++) {
+                    var randomIndex = Math.floor(Math.random() * wordList.length);
+                    seedWords.push(wordList[randomIndex]);
+                }
+                
+                vm.seedPhrase = seedWords.join(' ');
+                vm.showMessage('Seed phrase berhasil digenerate! Salin dan simpan dengan aman.', 'success', 5000);
+            };
+            
+            // Validasi seed phrase
+            vm.validateSeedPhrase = function(phrase) {
+                var words = phrase.trim().split(/\s+/);
+                
+                // Cek jumlah kata
+                if (words.length !== 12) {
+                    return {
+                        valid: false,
+                        message: 'Seed phrase harus terdiri dari 12 kata'
+                    };
+                }
+                
+                // Cek kata kosong
+                for (var i = 0; i < words.length; i++) {
+                    if (!words[i]) {
+                        return {
+                            valid: false,
+                            message: 'Terdapat kata kosong dalam seed phrase'
+                        };
+                    }
+                }
+                
+                return {
+                    valid: true,
+                    words: words
+                };
+            };
+            
+            // Fungsi enkripsi sederhana (untuk demo)
+            vm.simpleEncrypt = function(text, seed) {
+                // Enkripsi sederhana dengan XOR dan seed phrase
+                var result = '';
+                var seedHash = 0;
+                
+                // Buat hash dari seed phrase
+                for (var i = 0; i < seed.length; i++) {
+                    seedHash = (seedHash << 5) - seedHash + seed.charCodeAt(i);
+                    seedHash = seedHash & seedHash;
+                }
+                
+                // Enkripsi teks
+                for (var j = 0; j < text.length; j++) {
+                    var charCode = text.charCodeAt(j) ^ (seedHash + j);
+                    result += String.fromCharCode(charCode);
+                }
+                
+                return btoa(result); // Convert ke base64
+            };
+            
+            // Fungsi dekripsi sederhana
+            vm.simpleDecrypt = function(encryptedText, seed) {
+                try {
+                    // Decode dari base64
+                    var text = atob(encryptedText);
+                    var result = '';
+                    var seedHash = 0;
+                    
+                    // Buat hash dari seed phrase (harus sama dengan enkripsi)
+                    for (var i = 0; i < seed.length; i++) {
+                        seedHash = (seedHash << 5) - seedHash + seed.charCodeAt(i);
+                        seedHash = seedHash & seedHash;
+                    }
+                    
+                    // Dekripsi teks
+                    for (var j = 0; j < text.length; j++) {
+                        var charCode = text.charCodeAt(j) ^ (seedHash + j);
+                        result += String.fromCharCode(charCode);
+                    }
+                    
+                    return result;
+                } catch (e) {
+                    return null;
+                }
+            };
+            
+            // Fungsi login
+            vm.login = function() {
+                var validation = vm.validateSeedPhrase(vm.seedPhrase);
+                
+                if (!validation.valid) {
+                    vm.showMessage(validation.message, 'error', 3000);
+                    return;
+                }
+                
+                // Simpan seed phrase yang digunakan
+                var seedKey = 'seed_phrase_hash';
+                var storedSeedHash = localStorage.getItem(seedKey);
+                var currentSeedHash = btoa(vm.seedPhrase);
+                
+                // Jika belum ada seed phrase yang disimpan (user baru)
+                if (!storedSeedHash) {
+                    // Simpan hash seed phrase
+                    localStorage.setItem(seedKey, currentSeedHash);
+                    vm.showMessage('Akun baru berhasil dibuat!', 'success', 2000);
+                } else {
+                    // Cek apakah seed phrase cocok
+                    if (storedSeedHash !== currentSeedHash) {
+                        vm.showMessage('Seed phrase salah!', 'error', 3000);
+                        return;
+                    }
+                }
+                
+                // Login berhasil
+                vm.isLoggedIn = true;
+                vm.currentUser = 'user_' + validation.words[0] + '_' + validation.words[validation.words.length - 1];
+                vm.showInfo = false;
+                
+                // Load catatan dari localStorage (terenkripsi)
+                var encryptedNotes = localStorage.getItem('encrypted_notes');
+                if (encryptedNotes) {
+                    try {
+                        var decrypted = vm.simpleDecrypt(encryptedNotes, vm.seedPhrase);
+                        if (decrypted) {
+                            vm.notes = JSON.parse(decrypted);
+                            // Convert date strings back to Date objects
+                            vm.notes = vm.notes.map(function(note) {
+                                note.date = new Date(note.date);
+                                return note;
+                            });
+                        }
+                    } catch (e) {
+                        vm.notes = [];
+                        vm.showMessage('Gagal memuat catatan. Menggunakan data baru.', 'error', 3000);
+                    }
+                }
+                
+                // Jika tidak ada catatan, tambahkan contoh
+                if (vm.notes.length === 0) {
+                    vm.notes = [
+                        {
+                            title: 'Selamat Datang!',
+                            content: 'Catatan Anda dienkripsi dengan seed phrase. Jangan lupa seed phrase Anda!',
+                            date: new Date()
+                        }
+                    ];
+                    vm.saveNotesToStorage();
+                }
+            };
+            
+            // Fungsi logout
+            vm.logout = function() {
+                vm.isLoggedIn = false;
+                vm.seedPhrase = '';
+                vm.notes = [];
+                vm.newNote = { title: '', content: '' };
+                vm.searchText = '';
+                vm.showMessage('Anda telah logout', 'info', 2000);
+            };
+            
+            // Fungsi untuk menyimpan catatan ke localStorage (terenkripsi)
+            vm.saveNotesToStorage = function() {
+                if (!vm.isLoggedIn) return;
+                
+                try {
+                    var notesString = JSON.stringify(vm.notes);
+                    var encrypted = vm.simpleEncrypt(notesString, vm.seedPhrase);
+                    localStorage.setItem('encrypted_notes', encrypted);
+                } catch (e) {
+                    console.error('Gagal menyimpan catatan:', e);
+                }
+            };
+            
+            // Fungsi untuk menambah catatan baru
+            vm.addNote = function() {
+                if (vm.newNote.title && vm.newNote.content) {
+                    vm.notes.push({
+                        title: vm.newNote.title,
+                        content: vm.newNote.content,
+                        date: new Date()
+                    });
+                    
+                    // Reset form
+                    vm.newNote.title = '';
+                    vm.newNote.content = '';
+                    
+                    // Simpan ke storage
+                    vm.saveNotesToStorage();
+                    
+                    // Tampilkan pesan sukses
+                    vm.showMessage('Catatan berhasil ditambahkan!', 'success', 2000);
+                }
+            };
+            
+            // Fungsi untuk menghapus catatan
+            vm.deleteNote = function(index) {
+                if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+                    vm.notes.splice(index, 1);
+                    vm.saveNotesToStorage();
+                    vm.showMessage('Catatan berhasil dihapus!', 'success', 2000);
+                }
+            };
+            
+            // Fungsi untuk mendapatkan catatan yang sudah difilter
+            vm.getFilteredNotes = function() {
+                if (!vm.searchText) {
+                    return vm.notes;
+                }
+                
+                var searchLower = vm.searchText.toLowerCase();
+                return vm.notes.filter(function(note) {
+                    return note.title.toLowerCase().includes(searchLower) || 
+                           note.content.toLowerCase().includes(searchLower);
+                });
+            };
+            
+            // Cek auto-login dari localStorage
+            var initApp = function() {
+                var storedSeedHash = localStorage.getItem('seed_phrase_hash');
+                if (storedSeedHash) {
+                    vm.showMessage('Silakan login dengan seed phrase Anda', 'info');
+                    vm.showInfo = false;
+                } else {
+                    vm.showMessage('Gunakan seed phrase default untuk pertama kali login', 'info');
+                }
+            };
+            
+            // Initialize
+            initApp();
+        })
+        .filter('date', function() {
+            return function(input) {
+                if (!input) return '';
+                
+                var date = new Date(input);
+                var options = { 
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                
+                return date.toLocaleDateString('id-ID', options);
+            };
+        });
+    </script>
+</body>
+</html>
