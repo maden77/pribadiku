@@ -33,6 +33,7 @@
             color: white;
             padding: 25px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
@@ -159,6 +160,8 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            font-size: 14px;
         }
         
         .logout-btn:hover {
@@ -206,7 +209,6 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #f0f0f0;
-            position: relative;
         }
         
         .notes-header h2 {
@@ -324,9 +326,15 @@
             border: 1px solid #bee5eb;
         }
         
-        /* Hidden class */
-        .hidden {
-            display: none;
+        /* Debug info */
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            border-left: 3px solid #ffc107;
         }
     </style>
 </head>
@@ -337,7 +345,7 @@
             <button class="btn logout-btn" ng-click="vm.logout()">🚪 Logout</button>
             <h1>📝 Aplikasi Catatan HTML-ng</h1>
             <p>Menggunakan AngularJS 1.x (HTML-ng) - Two-way Data Binding</p>
-            <p>User: {{vm.currentUser}}</p>
+            <p><small>User ID: {{vm.userId}}</small></p>
         </div>
         
         <!-- Login Section (Tampil jika belum login) -->
@@ -348,10 +356,12 @@
                 
                 <div class="message message-info" ng-if="vm.showInfo">
                     <strong>Info:</strong> Untuk pertama kali login, gunakan seed phrase default:<br>
-                    <code>word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12</code>
+                    <code style="display: block; padding: 10px; background: #f5f5f5; margin: 10px 0; border-radius: 5px; font-family: monospace;">
+                        word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12
+                    </code>
                 </div>
                 
-                <div class="message" ng-class="{'message-success': vm.loginMessage.type === 'success', 'message-error': vm.loginMessage.type === 'error'}" 
+                <div class="message" ng-class="{'message-success': vm.loginMessage.type === 'success', 'message-error': vm.loginMessage.type === 'error', 'message-info': vm.loginMessage.type === 'info'}" 
                      ng-if="vm.loginMessage.text">
                     {{vm.loginMessage.text}}
                 </div>
@@ -362,12 +372,12 @@
                           ng-keyup="$event.keyCode === 13 && vm.login()"></textarea>
                 
                 <div class="info-box">
-                    <h4>📌 Apa itu Seed Phrase?</h4>
+                    <h4>📌 Cara Kerja:</h4>
                     <ul>
-                        <li>Seed phrase adalah kumpulan 12 kata acak yang berfungsi sebagai password</li>
-                        <li>Setiap kata harus dipisahkan dengan spasi</li>
-                        <li>Simpan seed phrase Anda dengan aman!</li>
-                        <li>Catatan Anda dienkripsi dengan seed phrase ini</li>
+                        <li><strong>Pertama kali:</strong> Gunakan seed phrase default di atas</li>
+                        <li><strong>Catatan penting:</strong> Data disimpan berdasarkan seed phrase yang digunakan</li>
+                        <li>Gunakan seed phrase yang sama untuk mengakses data yang sama</li>
+                        <li>Seed phrase berbeda = data berbeda</li>
                     </ul>
                 </div>
                 
@@ -376,13 +386,15 @@
                         🔑 Login
                     </button>
                     <button class="btn btn-secondary" ng-click="vm.generateSeedPhrase()">
-                        🎲 Generate Seed Phrase
+                        🎲 Generate Seed Baru
                     </button>
                 </div>
                 
-                <div style="margin-top: 20px; color: #666; font-size: 14px;">
-                    <p><strong>Demo Mode:</strong> Seed phrase disimpan di localStorage browser Anda.<br>
-                    Data dienkripsi dengan sederhana menggunakan seed phrase sebagai key.</p>
+                <div class="debug-info" ng-if="vm.debugMode">
+                    <strong>Debug Info:</strong><br>
+                    Seed phrase: {{vm.seedPhrase}}<br>
+                    User ID: {{vm.userId}}<br>
+                    Notes count: {{vm.notes.length}}
                 </div>
             </div>
         </div>
@@ -394,9 +406,21 @@
                 <div class="input-group">
                     <input type="text" ng-model="vm.newNote.title" placeholder="Judul catatan..." maxlength="100">
                     <textarea ng-model="vm.newNote.content" placeholder="Isi catatan... (maksimal 500 karakter)" maxlength="500"></textarea>
-                    <button class="btn btn-primary" ng-click="vm.addNote()" ng-disabled="!vm.newNote.title || !vm.newNote.content">
-                        ➕ Tambah Catatan
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" ng-click="vm.addNote()" ng-disabled="!vm.newNote.title || !vm.newNote.content">
+                            ➕ Tambah Catatan
+                        </button>
+                        <button class="btn btn-secondary" ng-click="vm.debugMode = !vm.debugMode">
+                            🔧 Debug
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="message message-info" ng-if="vm.debugMode">
+                    <strong>Debug Mode Aktif</strong><br>
+                    User ID: {{vm.userId}}<br>
+                    Total Catatan: {{vm.notes.length}}<br>
+                    Storage Key: notes_{{vm.userId}}
                 </div>
             </div>
             
@@ -442,9 +466,10 @@
             
             // Status login
             vm.isLoggedIn = false;
-            vm.currentUser = '';
+            vm.userId = '';
             vm.seedPhrase = '';
             vm.showInfo = true;
+            vm.debugMode = false;
             
             // Pesan login
             vm.loginMessage = {
@@ -458,7 +483,7 @@
                 content: ''
             };
             
-            // Data catatan (akan dienkripsi)
+            // Data catatan
             vm.notes = [];
             
             // Teks untuk pencarian
@@ -480,6 +505,17 @@
                 }
             };
             
+            // Generate user ID dari seed phrase
+            vm.generateUserId = function(seedPhrase) {
+                // Buat hash sederhana dari seed phrase
+                var hash = 0;
+                for (var i = 0; i < seedPhrase.length; i++) {
+                    hash = ((hash << 5) - hash) + seedPhrase.charCodeAt(i);
+                    hash = hash & hash;
+                }
+                return 'user_' + Math.abs(hash).toString(16).substring(0, 8);
+            };
+            
             // Generate seed phrase acak
             vm.generateSeedPhrase = function() {
                 var wordList = [
@@ -496,7 +532,7 @@
                 }
                 
                 vm.seedPhrase = seedWords.join(' ');
-                vm.showMessage('Seed phrase berhasil digenerate! Salin dan simpan dengan aman.', 'success', 5000);
+                vm.showMessage('Seed phrase baru berhasil digenerate! Salin dan simpan dengan aman.', 'success', 5000);
             };
             
             // Validasi seed phrase
@@ -527,114 +563,88 @@
                 };
             };
             
-            // Fungsi enkripsi sederhana (untuk demo)
-            vm.simpleEncrypt = function(text, seed) {
-                // Enkripsi sederhana dengan XOR dan seed phrase
-                var result = '';
-                var seedHash = 0;
-                
-                // Buat hash dari seed phrase
-                for (var i = 0; i < seed.length; i++) {
-                    seedHash = (seedHash << 5) - seedHash + seed.charCodeAt(i);
-                    seedHash = seedHash & seedHash;
-                }
-                
-                // Enkripsi teks
-                for (var j = 0; j < text.length; j++) {
-                    var charCode = text.charCodeAt(j) ^ (seedHash + j);
-                    result += String.fromCharCode(charCode);
-                }
-                
-                return btoa(result); // Convert ke base64
-            };
-            
-            // Fungsi dekripsi sederhana
-            vm.simpleDecrypt = function(encryptedText, seed) {
-                try {
-                    // Decode dari base64
-                    var text = atob(encryptedText);
-                    var result = '';
-                    var seedHash = 0;
-                    
-                    // Buat hash dari seed phrase (harus sama dengan enkripsi)
-                    for (var i = 0; i < seed.length; i++) {
-                        seedHash = (seedHash << 5) - seedHash + seed.charCodeAt(i);
-                        seedHash = seedHash & seedHash;
-                    }
-                    
-                    // Dekripsi teks
-                    for (var j = 0; j < text.length; j++) {
-                        var charCode = text.charCodeAt(j) ^ (seedHash + j);
-                        result += String.fromCharCode(charCode);
-                    }
-                    
-                    return result;
-                } catch (e) {
-                    return null;
-                }
-            };
-            
             // Fungsi login
             vm.login = function() {
                 var validation = vm.validateSeedPhrase(vm.seedPhrase);
                 
                 if (!validation.valid) {
-                    vm.showMessage(validation.message, 'error', 3000);
-                    return;
-                }
-                
-                // Simpan seed phrase yang digunakan
-                var seedKey = 'seed_phrase_hash';
-                var storedSeedHash = localStorage.getItem(seedKey);
-                var currentSeedHash = btoa(vm.seedPhrase);
-                
-                // Jika belum ada seed phrase yang disimpan (user baru)
-                if (!storedSeedHash) {
-                    // Simpan hash seed phrase
-                    localStorage.setItem(seedKey, currentSeedHash);
-                    vm.showMessage('Akun baru berhasil dibuat!', 'success', 2000);
-                } else {
-                    // Cek apakah seed phrase cocok
-                    if (storedSeedHash !== currentSeedHash) {
-                        vm.showMessage('Seed phrase salah!', 'error', 3000);
+                    // Coba dengan default seed phrase jika kosong
+                    if (!vm.seedPhrase.trim()) {
+                        vm.seedPhrase = DEFAULT_SEED;
+                        validation = vm.validateSeedPhrase(vm.seedPhrase);
+                        if (!validation.valid) {
+                            vm.showMessage('Gunakan seed phrase default atau generate baru', 'error', 3000);
+                            return;
+                        }
+                    } else {
+                        vm.showMessage(validation.message, 'error', 3000);
                         return;
                     }
                 }
                 
+                // Generate user ID dari seed phrase
+                vm.userId = vm.generateUserId(vm.seedPhrase);
+                
                 // Login berhasil
                 vm.isLoggedIn = true;
-                vm.currentUser = 'user_' + validation.words[0] + '_' + validation.words[validation.words.length - 1];
                 vm.showInfo = false;
                 
-                // Load catatan dari localStorage (terenkripsi)
-                var encryptedNotes = localStorage.getItem('encrypted_notes');
-                if (encryptedNotes) {
-                    try {
-                        var decrypted = vm.simpleDecrypt(encryptedNotes, vm.seedPhrase);
-                        if (decrypted) {
-                            vm.notes = JSON.parse(decrypted);
-                            // Convert date strings back to Date objects
-                            vm.notes = vm.notes.map(function(note) {
-                                note.date = new Date(note.date);
-                                return note;
-                            });
-                        }
-                    } catch (e) {
-                        vm.notes = [];
-                        vm.showMessage('Gagal memuat catatan. Menggunakan data baru.', 'error', 3000);
-                    }
-                }
+                // Load catatan dari localStorage
+                vm.loadNotesFromStorage();
                 
                 // Jika tidak ada catatan, tambahkan contoh
                 if (vm.notes.length === 0) {
                     vm.notes = [
                         {
                             title: 'Selamat Datang!',
-                            content: 'Catatan Anda dienkripsi dengan seed phrase. Jangan lupa seed phrase Anda!',
+                            content: 'Catatan Anda tersimpan dengan aman. Gunakan seed phrase yang sama untuk mengakses data yang sama.',
+                            date: new Date()
+                        },
+                        {
+                            title: 'Tips Penggunaan',
+                            content: '1. Simpan seed phrase dengan aman\n2. Gunakan seed phrase yang sama setiap login\n3. Logout setelah selesai menggunakan',
                             date: new Date()
                         }
                     ];
                     vm.saveNotesToStorage();
+                    vm.showMessage('Akun baru dibuat dengan seed phrase ini!', 'success', 3000);
+                } else {
+                    vm.showMessage('Login berhasil! Memuat ' + vm.notes.length + ' catatan', 'success', 2000);
+                }
+            };
+            
+            // Fungsi untuk load catatan dari localStorage
+            vm.loadNotesFromStorage = function() {
+                try {
+                    var storageKey = 'notes_' + vm.userId;
+                    var storedNotes = localStorage.getItem(storageKey);
+                    
+                    if (storedNotes) {
+                        vm.notes = JSON.parse(storedNotes);
+                        // Convert date strings back to Date objects
+                        vm.notes = vm.notes.map(function(note) {
+                            note.date = new Date(note.date);
+                            return note;
+                        });
+                    } else {
+                        vm.notes = [];
+                    }
+                } catch (e) {
+                    console.error('Error loading notes:', e);
+                    vm.notes = [];
+                }
+            };
+            
+            // Fungsi untuk menyimpan catatan ke localStorage
+            vm.saveNotesToStorage = function() {
+                if (!vm.isLoggedIn || !vm.userId) return;
+                
+                try {
+                    var storageKey = 'notes_' + vm.userId;
+                    localStorage.setItem(storageKey, JSON.stringify(vm.notes));
+                } catch (e) {
+                    console.error('Error saving notes:', e);
+                    vm.showMessage('Gagal menyimpan catatan', 'error', 2000);
                 }
             };
             
@@ -645,20 +655,8 @@
                 vm.notes = [];
                 vm.newNote = { title: '', content: '' };
                 vm.searchText = '';
+                vm.userId = '';
                 vm.showMessage('Anda telah logout', 'info', 2000);
-            };
-            
-            // Fungsi untuk menyimpan catatan ke localStorage (terenkripsi)
-            vm.saveNotesToStorage = function() {
-                if (!vm.isLoggedIn) return;
-                
-                try {
-                    var notesString = JSON.stringify(vm.notes);
-                    var encrypted = vm.simpleEncrypt(notesString, vm.seedPhrase);
-                    localStorage.setItem('encrypted_notes', encrypted);
-                } catch (e) {
-                    console.error('Gagal menyimpan catatan:', e);
-                }
             };
             
             // Fungsi untuk menambah catatan baru
@@ -685,9 +683,10 @@
             // Fungsi untuk menghapus catatan
             vm.deleteNote = function(index) {
                 if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+                    var deletedNote = vm.notes[index];
                     vm.notes.splice(index, 1);
                     vm.saveNotesToStorage();
-                    vm.showMessage('Catatan berhasil dihapus!', 'success', 2000);
+                    vm.showMessage('Catatan "' + deletedNote.title + '" berhasil dihapus!', 'success', 2000);
                 }
             };
             
@@ -704,19 +703,26 @@
                 });
             };
             
-            // Cek auto-login dari localStorage
-            var initApp = function() {
-                var storedSeedHash = localStorage.getItem('seed_phrase_hash');
-                if (storedSeedHash) {
-                    vm.showMessage('Silakan login dengan seed phrase Anda', 'info');
+            // Cek jika ada session yang masih aktif
+            var checkExistingSession = function() {
+                var lastUserId = localStorage.getItem('last_user_id');
+                if (lastUserId) {
+                    vm.showMessage('Silakan login dengan seed phrase yang sesuai', 'info');
                     vm.showInfo = false;
-                } else {
-                    vm.showMessage('Gunakan seed phrase default untuk pertama kali login', 'info');
                 }
             };
             
             // Initialize
-            initApp();
+            checkExistingSession();
+            
+            // Watch untuk auto-save catatan
+            $scope.$watch(function() {
+                return vm.notes;
+            }, function(newVal, oldVal) {
+                if (vm.isLoggedIn && newVal !== oldVal) {
+                    vm.saveNotesToStorage();
+                }
+            }, true);
         })
         .filter('date', function() {
             return function(input) {
