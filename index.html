@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Catatan - HTML-ng (AngularJS)</title>
+    <title>Catatan</title>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <style>
         * {
@@ -343,8 +343,8 @@
         <!-- Header -->
         <div class="header" ng-if="vm.isLoggedIn">
             <button class="btn logout-btn" ng-click="vm.logout()">🚪 Logout</button>
-            <h1>📝 Aplikasi Catatan HTML-ng</h1>
-            <p>Menggunakan AngularJS 1.x (HTML-ng) - Two-way Data Binding</p>
+            <h1>📝 Aplikasi Catatan </h1>
+            
             <p><small>User ID: {{vm.userId}}</small></p>
         </div>
         
@@ -368,7 +368,7 @@
                 
                 <textarea class="seed-phrase-input" 
                           ng-model="vm.seedPhrase" 
-                          placeholder="Masukkan 12 kata seed phrase Anda (dipisahkan spasi)"
+                          placeholder="Masukkan 12 kata"
                           ng-keyup="$event.keyCode === 13 && vm.login()"></textarea>
                 
                 <div class="info-box">
@@ -597,14 +597,10 @@
                     vm.notes = [
                         {
                             title: 'Selamat Datang!',
-                            content: 'Catatan Anda tersimpan dengan aman. Gunakan seed phrase yang sama untuk mengakses data yang sama.',
+                            content: 'Catatan Anda tersimpan dengan aman.',
                             date: new Date()
                         },
-                        {
-                            title: 'Tips Penggunaan',
-                            content: '1. Simpan seed phrase dengan aman\n2. Gunakan seed phrase yang sama setiap login\n3. Logout setelah selesai menggunakan',
-                            date: new Date()
-                        }
+                        
                     ];
                     vm.saveNotesToStorage();
                     vm.showMessage('Akun baru dibuat dengan seed phrase ini!', 'success', 3000);
